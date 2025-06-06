@@ -1,4 +1,5 @@
 import numpy as np
+import timeit as tt
 
 
 game = np.zeros((9,9))
@@ -148,10 +149,36 @@ def Solve(x,y,gameState):
         gameState.gameArray[y,x] = possibilities[0]
         return
 
+def SolveBackTrack(array):
+    indicies = np.where(array ==0)
+    if len(indicies[0]) == 0:
+        return True
+
+    row = indicies[0][0]
+    col = indicies[1][0]
+    #find possibilities
+    possibilities = BaseSolve(array,row,col)
+    for i in range(len(possibilities)):
+        array[row,col] = possibilities[i]
+        if SolveBackTrack(array):
+            return True
+        array[row,col] = 0
+    return False 
 
 
-#idea for an algorithm to solve
-#do normal linear traversal to find first solve.
+def BaseSolve(array,row,col):
+    possibilities= np.array([1,2,3,4,5,6,7,8,9])
+
+    #vertical slice
+    possibilities = np.setdiff1d(possibilities, array[:,col])
+    #horizontal slice
+    possibilities = np.setdiff1d(possibilities, array[row,:] )
+    #region
+    regionX, regionY = GetTopLeftCornerOfRegion(col,row)
+    possibilities = np.setdiff1d(possibilities,array[regionY:regionY+3,regionX:regionX+3])
+    return possibilities
+
+#do normal linear traversal find first solve.
 #from that check all blank spots in the column, row, region as they have a higher chance to being solvable after
 #solving that one
 
@@ -171,6 +198,9 @@ def GetTopLeftCornerOfRegion(x,y):
     else:
         regionY = 6
     return regionX, regionY 
+def Benchmark():
+    SolveBackTrack(hard)
+print(tt.timeit(Benchmark, number=25))
 
-Game = GameState(hard)
-SolveGame(Game)
+#Game = GameState(hard)
+#SolveGam
